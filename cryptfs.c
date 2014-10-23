@@ -1160,6 +1160,8 @@ static int create_crypto_blk_dev(struct crypt_mnt_ftr *crypt_ftr,
   int version[3];
   char *extra_params;
   int load_count;
+  struct stat statbuf;
+  int retry = 25;
 
   if ((fd = open("/dev/device-mapper", O_RDWR|O_CLOEXEC)) < 0 ) {
     SLOGE("Cannot open device-mapper\n");
@@ -1208,6 +1210,16 @@ static int create_crypto_blk_dev(struct crypt_mnt_ftr *crypt_ftr,
   if (ioctl(fd, DM_DEV_SUSPEND, io)) {
     SLOGE("Cannot resume the dm-crypt device\n");
     goto errout;
+  }
+
+  /* wait for creating dm device */
+  while (stat(crypto_blk_name, &statbuf) != 0) {
+      retry--;
+      if (retry < 0) {
+          SLOGE("Timed out to getting dm blkdev status.\n");
+          goto errout;
+      }
+      usleep(40 * 1000);
   }
 
   /* We made it here with no errors.  Woot! */
