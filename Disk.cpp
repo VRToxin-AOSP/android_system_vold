@@ -114,6 +114,21 @@ void Disk::listVolumes(VolumeBase::Type type, std::list<std::string>& list) {
     }
 }
 
+std::shared_ptr<VolumeBase> Disk::getVolumeForFile(const char *filename) {
+    std::string mountPoint;
+    for (auto vol : mVolumes) {
+        mountPoint = vol->getPath();
+        if (!strncmp(filename, mountPoint.c_str(), mountPoint.length())) {
+            return vol;
+        }
+        auto stackedVol = vol->getVolumeForFile(filename);
+        if(stackedVol != nullptr) {
+            return stackedVol;
+        }
+    }
+    return nullptr;
+}
+
 status_t Disk::create() {
     CHECK(!mCreated);
     mCreated = true;

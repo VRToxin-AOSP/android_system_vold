@@ -67,6 +67,8 @@ public:
 
     void listVolumes(VolumeBase::Type type, std::list<std::string>& list);
 
+    std::shared_ptr<VolumeBase> getVolumeForFile(const char *filename);
+
     status_t create();
     status_t destroy();
 

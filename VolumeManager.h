@@ -194,6 +194,8 @@ public:
      */
     int mkdirs(char* path);
 
+    std::shared_ptr<android::vold::VolumeBase> getVolumeForFile(const char *filename);
+
 private:
     VolumeManager();
     void readInitialState();

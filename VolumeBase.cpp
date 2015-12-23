@@ -160,6 +160,18 @@ std::shared_ptr<VolumeBase> VolumeBase::findVolume(const std::string& id) {
     return nullptr;
 }
 
+std::shared_ptr<VolumeBase> VolumeBase::getVolumeForFile(const char *filename) {
+    std::string mountPoint;
+    for (auto vol : mVolumes) {
+        mountPoint = vol->getPath();
+        if (!strncmp(filename, mountPoint.c_str(), mountPoint.length())) {
+            return vol;
+        }
+    }
+
+    return nullptr;
+}
+
 status_t VolumeBase::create() {
     CHECK(!mCreated);
 

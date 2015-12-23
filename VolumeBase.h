@@ -94,6 +94,7 @@ public:
     void removeVolume(const std::shared_ptr<VolumeBase>& volume);
 
     std::shared_ptr<VolumeBase> findVolume(const std::string& id);
+    std::shared_ptr<VolumeBase> getVolumeForFile(const char *filename);
 
     status_t create();
     status_t destroy();

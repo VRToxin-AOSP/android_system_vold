@@ -1882,10 +1882,35 @@ bool VolumeManager::isMountpointMounted(const char *mp)
 int VolumeManager::mkdirs(char* path) {
     // Only offer to create directories for paths managed by vold
     if (strncmp(path, "/storage/", 9) == 0) {
-        // fs_mkdirs() does symlink checking and relative path enforcement
-        return fs_mkdirs(path, 0700);
-    } else {
-        SLOGE("Failed to find mounted volume for %s", path);
-        return -EINVAL;
+        bool isVolMounted = false;
+        std::string mountPoint = mInternalEmulated->getPath();
+        if(mInternalEmulated->getState() == android::vold::VolumeBase::State::kMounted \
+                && !strncmp(path, mountPoint.c_str(), mountPoint.length())) {
+            isVolMounted = true;
+        } else {
+            auto vol = getVolumeForFile(path);
+            if ((vol != nullptr) && (vol->getState() == android::vold::VolumeBase::State::kMounted)) {
+                isVolMounted = true;
+            }
+        }
+
+        if (isVolMounted) {
+            // fs_mkdirs() does symlink checking and relative path enforcement
+            return fs_mkdirs(path, 0700);
+        }
     }
+
+    SLOGE("Failed to find mounted volume for %s", path);
+    return -EINVAL;
+}
+
+std::shared_ptr<android::vold::VolumeBase> VolumeManager::getVolumeForFile(const char *filename) {
+    for (auto disk : mDisks) {
+        auto vol = disk->getVolumeForFile(filename);
+        if (vol != nullptr) {
+            return vol;
+        }
+    }
+
+    return nullptr;
 }
