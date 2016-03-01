@@ -11,6 +11,7 @@
 #include <sys/mount.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <cutils/properties.h>
 #include <openssl/sha.h>
@@ -665,7 +666,12 @@ int e4crypt_delete_user_key(const char *user_handle) {
         SLOGE("Unable to launch secdiscard on %s: %s\n", key_path.c_str(),
             strerror(errno));
         exit(-1);
+    } else {
+        if (waitpid(pid, NULL, 0) < 0) {
+            SLOGE("Unable to reap zombie %d: %s", pid, strerror(errno));
+            return -1;
+        }
     }
-    // ext4enc:TODO reap the zombie
+
     return 0;
 }
